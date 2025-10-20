@@ -1,0 +1,12 @@
+[general]
+update_interval = "1s"
+log_level = "info"
+
+[export]
+enabled = true
+port = 9100
+host = "0.0.0.0"
+
+[ui]
+theme = "default"
+refresh_rate = 1000
