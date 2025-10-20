@@ -37,6 +37,15 @@ pub struct ServicesConfig {
     #[cfg(feature = "redis-db")]
     #[serde(default)]
     pub redis: Option<RedisServiceConfig>,
+
+    #[serde(default)]
+    pub sidekiq: Option<SidekiqServiceConfig>,
+
+    #[serde(default)]
+    pub rabbitmq: Option<RabbitMQServiceConfig>,
+
+    #[serde(default)]
+    pub celery: Option<CeleryServiceConfig>,
 }
 
 #[cfg(feature = "mysql")]
@@ -58,6 +67,24 @@ pub struct PostgreSQLServiceConfig {
 pub struct RedisServiceConfig {
     pub enabled: bool,
     pub instances: Vec<crate::collectors::services::RedisInstanceConfig>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct SidekiqServiceConfig {
+    pub enabled: bool,
+    pub config: crate::collectors::services::SidekiqConfig,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct RabbitMQServiceConfig {
+    pub enabled: bool,
+    pub config: crate::collectors::services::RabbitMQConfig,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct CeleryServiceConfig {
+    pub enabled: bool,
+    pub config: crate::collectors::services::CeleryConfig,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
