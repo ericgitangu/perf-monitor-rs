@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "monitor-rs.fullname" . }}
+  labels:
+    {{- include "monitor-rs.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "monitor-rs.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "monitor-rs.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "monitor-rs.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      hostPID: {{ .Values.hostPID }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+      - name: monitor-rs
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - /usr/local/bin/monitor-rs
+          - server
+          - --listen
+          - "0.0.0.0:{{ .Values.prometheus.port }}"
+        env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: RUST_LOG
+            value: {{ .Values.config.general.log_level }}
+        ports:
+          - name: metrics
+            containerPort: {{ .Values.prometheus.port }}
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: metrics
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: metrics
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+          - name: config
+            mountPath: /etc/monitor-rs
+            readOnly: true
+          - name: procfs
+            mountPath: /host/proc
+            readOnly: true
+          - name: sysfs
+            mountPath: /host/sys
+            readOnly: true
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "monitor-rs.fullname" . }}-config
+        - name: procfs
+          hostPath:
+            path: {{ .Values.hostPath.procfs }}
+        - name: sysfs
+          hostPath:
+            path: {{ .Values.hostPath.sysfs }}
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

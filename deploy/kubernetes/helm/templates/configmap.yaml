@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "monitor-rs.fullname" . }}-config
+  labels:
+    {{- include "monitor-rs.labels" . | nindent 4 }}
+data:
+  config.toml: |
+    [general]
+    update_interval = {{ .Values.config.general.update_interval | quote }}
+    log_level = {{ .Values.config.general.log_level | quote }}
+
+    [export]
+    enabled = {{ .Values.config.export.enabled }}
+    port = {{ .Values.config.export.port }}
+
+    [ui]
+    theme = {{ .Values.config.ui.theme | quote }}
+    refresh_rate = {{ .Values.config.ui.refresh_rate }}
+
+    {{- if .Values.config.services.mysql.enabled }}
+    [services.mysql]
+    enabled = true
+    {{- with .Values.config.services.mysql.instances }}
+    instances = {{ toJson . }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.config.services.postgresql.enabled }}
+    [services.postgresql]
+    enabled = true
+    {{- with .Values.config.services.postgresql.instances }}
+    instances = {{ toJson . }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.config.services.redis.enabled }}
+    [services.redis]
+    enabled = true
+    {{- with .Values.config.services.redis.instances }}
+    instances = {{ toJson . }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.config.services.sidekiq.enabled }}
+    [services.sidekiq]
+    enabled = true
+    redis_url = {{ .Values.config.services.sidekiq.redis_url | quote }}
+    namespace = {{ .Values.config.services.sidekiq.namespace | quote }}
+    {{- with .Values.config.services.sidekiq.queues }}
+    queues = {{ toJson . }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.config.services.rabbitmq.enabled }}
+    [services.rabbitmq]
+    enabled = true
+    management_url = {{ .Values.config.services.rabbitmq.management_url | quote }}
+    username = {{ .Values.config.services.rabbitmq.username | quote }}
+    password = {{ .Values.config.services.rabbitmq.password | quote }}
+    {{- with .Values.config.services.rabbitmq.queues }}
+    queues = {{ toJson . }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.config.services.celery.enabled }}
+    [services.celery]
+    enabled = true
+    broker_url = {{ .Values.config.services.celery.broker_url | quote }}
+    broker_type = {{ .Values.config.services.celery.broker_type | quote }}
+    {{- with .Values.config.services.celery.queues }}
+    queues = {{ toJson . }}
+    {{- end }}
+    {{- end }}

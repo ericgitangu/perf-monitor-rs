@@ -1,0 +1,32 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: {{ include "monitor-rs.rbac.apiVersion" . }}
+kind: ClusterRole
+metadata:
+  name: {{ include "monitor-rs.fullname" . }}
+  labels:
+    {{- include "monitor-rs.labels" . | nindent 4 }}
+rules:
+  # Read access to nodes for hardware information
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/stats
+    verbs:
+      - get
+      - list
+  # Read access to pods for service detection
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  # Read access to services
+  - apiGroups: [""]
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+{{- end }}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "monitor-rs.fullname" . }}
+  labels:
+    {{- include "monitor-rs.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  selector:
+    {{- include "monitor-rs.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: metrics
+      port: {{ .Values.prometheus.port }}
+      targetPort: metrics
+      protocol: TCP

@@ -1,0 +1,18 @@
+apiVersion: v2
+name: monitor-rs
+description: Service-aware infrastructure monitoring in Rust
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - monitoring
+  - metrics
+  - prometheus
+  - system
+  - infrastructure
+home: https://github.com/ericgitangu/perf-monitor-rs
+sources:
+  - https://github.com/ericgitangu/perf-monitor-rs
+maintainers:
+  - name: Eric Gitangu
+    email: ericgitangu@example.com
