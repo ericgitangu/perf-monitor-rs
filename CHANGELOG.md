@@ -7,7 +7,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Week 1 Progress (Days 1-7) - 100% Complete
+### Post-Week 1 Enhancements (Days 8+) - Production Infrastructure
+
+## [0.2.0] - 2025-10-22
+
+### Added - Post-Week 1: Real Infrastructure Support
+
+#### MongoDB Collector
+- **MongoDB Monitoring** (`src/collectors/services/mongodb.rs` - 352 lines)
+  - Async client with mongodb v2.8
+  - Multi-instance support
+  - Metrics collected:
+    - Connections (current, available, active, total_created)
+    - Operations per second (insert, query, update, delete, getmore, command)
+    - Lock percentage
+    - Replication lag and role
+    - Database statistics (collections, documents, data/index/storage size)
+    - Version and uptime
+  - Connection management
+  - Password protection
+  - 2 unit tests
+
+#### ThinkingSphinx Collector
+- **Sphinx Search Monitoring** (`src/collectors/services/sphinx.rs` - 309 lines)
+  - **NOT Elasticsearch** - Uses MySQL wire protocol on port 9306
+  - Multi-instance support
+  - Metrics collected:
+    - Queries total and per second (delta-based)
+    - Average query time in milliseconds
+    - Index statistics (document count, size in bytes)
+    - Worker threads running
+    - Version, uptime, connections
+  - Previous stats tracking for QPS calculation
+  - 2 unit tests
+
+#### Puma Web Server Collector
+- **Puma Metrics** (`src/collectors/services/puma.rs` - 298 lines)
+  - HTTP-based stats API with reqwest
+  - Supports clustered and single mode
+  - Metrics collected:
+    - Workers (total, booted, old)
+    - Thread pool usage (running, max, capacity)
+    - **Backlog** (critical metric)
+    - Requests count
+    - Per-worker details (PID, phase, booted, last_checkin)
+  - Token authentication
+  - 2 unit tests
+
+#### Production Infrastructure Examples
+- **5 Real Infrastructure Configs** (`examples/infrastructure/`)
+  - `solarhub-config.toml` - Standard Rails with MySQL, MongoDB, Redis, Sphinx, Puma, Sidekiq
+  - `momoep-config.toml` - Payment platform with 25+ Sidekiq queues, HA MySQL, aggressive alerting
+  - `moto-config.toml` - Standard Rails monitoring
+  - `mese-config.toml` - Standard Rails monitoring
+  - `accounts-alms-config.toml` - Python/FastAPI with PostgreSQL, RabbitMQ, Celery
+  - `README.md` (450+ lines) - Complete infrastructure guide
+
+#### APM Documentation
+- **Application Performance Monitoring Guide** (`docs/guides/APM.md` - 650+ lines)
+  - Architecture monitoring (multi-service, Prometheus aggregation)
+  - Service dependency graphs
+  - Performance bottleneck detection (5 patterns)
+  - Database monitoring deep dive (MySQL, MongoDB, Redis)
+  - Queue monitoring (Sidekiq 25+ queues, Celery)
+  - Web server monitoring (Puma backlog, thread pool)
+  - Search engine monitoring (ThinkingSphinx)
+  - Alerting strategies and severity levels
+  - 2 troubleshooting workflows (decision trees)
+  - Best practices (baselines, runbooks, autoscaling)
+
+### Changed
+
+#### Documentation
+- **README.md** - Updated with real infrastructure stack
+  - Added production-ready examples section
+  - Updated feature list (MongoDB, Sphinx, Puma)
+  - Updated architecture diagram
+  - Updated statistics (14 collectors, 50+ metrics, 5 examples)
+
+#### Dependencies
+- Added `mongodb = "2.8"` (optional)
+- Added `reqwest = "0.11"` with json feature (optional)
+- Updated `server` feature to include `reqwest`
+- Updated `databases` feature to include `mongodb-db`
+
+#### Module Structure
+- Registered MongoDB, Sphinx, and Puma collectors in `src/collectors/services/mod.rs`
+- Added Puma to server feature dependencies
+
+### Statistics (Post-Week 1)
+- **New Collectors:** 3 (MongoDB, Sphinx, Puma)
+- **Total Collectors:** 14
+- **New Config Files:** 6 (5 infrastructure + 1 README)
+- **New Documentation:** 1 major guide (APM)
+- **Lines of Code Added:** ~1,500
+- **Total Project Size:** ~14,500 lines
+
+---
 
 ## [0.1.0] - 2025-10-21
 

@@ -240,8 +240,8 @@ graph LR
         end
 
         subgraph "Container Mounts"
-            PROC[/proc<br/>ro, bind]
-            SYS[/sys<br/>ro, bind]
+            PROC["proc mount - ro, bind"]
+            SYS["sys mount - ro, bind"]
         end
 
         subgraph "Inside Container"
@@ -267,7 +267,7 @@ graph LR
         PROM --> GRAF[Grafana]
     end
 
-    style LXC fill:#4a90e2,stroke:#fff,stroke-width:2px,color:#fff
+    style LXC fill:#326ce5,stroke:#fff,stroke-width:2px,color:#fff
     style MON fill:#28a745,stroke:#fff,stroke-width:2px,color:#fff
     style PROM fill:#e6522c,stroke:#fff,stroke-width:2px,color:#fff
     style GRAF fill:#f46800,stroke:#fff,stroke-width:2px,color:#fff

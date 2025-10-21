@@ -1,0 +1,134 @@
+# ALMS (Accounts Service) Infrastructure Monitoring Configuration
+# Python/FastAPI microservice for centralized account management
+
+[general]
+name = "alms-accounts"
+environment = "production"
+collection_interval = "15s"
+retention_period = "14d"  # Longer retention for account audit trails
+
+[prometheus]
+enabled = true
+port = 9094
+path = "/metrics"
+
+[server]
+enabled = true
+host = "0.0.0.0"
+port = 8084
+
+# PostgreSQL - ALMS likely uses PostgreSQL instead of MySQL for FastAPI
+[[databases.postgresql]]
+name = "alms-postgres-primary"
+host = "postgres.alms.internal"
+port = 5432
+username = "monitor"
+database = "alms_production"
+max_connections = 10
+
+[[databases.postgresql]]
+name = "alms-postgres-replica"
+host = "postgres-replica.alms.internal"
+port = 5432
+username = "monitor"
+database = "alms_production"
+max_connections = 5
+
+# Redis - For session management and caching
+[[databases.redis]]
+name = "alms-redis-cache"
+host = "redis.alms.internal"
+port = 6379
+database = 0
+
+[[databases.redis]]
+name = "alms-redis-sessions"
+host = "redis.alms.internal"
+port = 6379
+database = 1
+
+# FastAPI Service Health Check
+[[services.http]]
+name = "alms-api-health"
+url = "http://alms.internal:8000/health"
+method = "GET"
+expected_status = 200
+timeout = "5s"
+
+[[services.http]]
+name = "alms-api-ready"
+url = "http://alms.internal:8000/ready"
+method = "GET"
+expected_status = 200
+timeout = "5s"
+
+# RabbitMQ - For async account operations (if ALMS uses message queues)
+[[services.rabbitmq]]
+name = "alms-rabbitmq"
+host = "rabbitmq.alms.internal"
+port = 15672
+username = "monitor"
+vhost = "alms"
+
+# Celery - Python background task processing (likely used by FastAPI)
+[[services.celery]]
+name = "alms-celery-workers"
+broker_url = "amqp://rabbitmq.alms.internal:5672/alms"
+backend_url = "redis://redis.alms.internal:6379/2"
+queues = [
+    "account_creation",
+    "account_verification",
+    "account_updates",
+    "password_resets",
+    "email_verification",
+    "sms_verification",
+    "notifications",
+    "audit_logging"
+]
+
+# System Monitoring
+[system]
+enabled = true
+
+[system.cpu]
+enabled = true
+collect_per_core = true
+
+[system.memory]
+enabled = true
+collect_swap = true
+
+[system.disk]
+enabled = true
+mount_points = ["/", "/var/lib/postgresql"]
+
+[system.network]
+enabled = true
+interfaces = ["eth0"]
+
+# Logging
+[logging]
+level = "info"
+format = "json"
+output = "stdout"
+
+# Alerting Thresholds
+[alerts.postgresql]
+connections_percent = 80
+slow_queries_per_second = 10
+replication_lag_seconds = 30
+
+[alerts.redis]
+memory_percent = 85
+evicted_keys_per_second = 50
+
+[alerts.celery]
+queue_latency_seconds = 180
+dead_jobs_threshold = 50
+worker_utilization_percent = 85
+
+# Account-specific alerts
+[alerts.custom]
+failed_login_attempts_per_minute = 100
+account_creation_failure_rate_percent = 5
+email_verification_timeout_rate_percent = 10

@@ -1,0 +1,144 @@
+# Mese Infrastructure Monitoring Configuration
+# Standard Rails application monitoring
+
+[general]
+name = "mese"
+environment = "production"
+collection_interval = "15s"
+retention_period = "7d"
+
+[prometheus]
+enabled = true
+port = 9093
+path = "/metrics"
+
+[server]
+enabled = true
+host = "0.0.0.0"
+port = 8083
+
+# MySQL 8.0.18 - Primary Database
+[[databases.mysql]]
+name = "mese-mysql-primary"
+host = "mysql.mese.internal"
+port = 3306
+username = "monitor"
+database = "mese_production"
+max_connections = 10
+
+[[databases.mysql]]
+name = "mese-mysql-replica"
+host = "mysql-replica.mese.internal"
+port = 3306
+username = "monitor"
+database = "mese_production"
+max_connections = 5
+
+# MongoDB 4.2 - Document Store
+[[databases.mongodb]]
+name = "mese-mongodb"
+host = "mongodb.mese.internal"
+port = 27017
+username = "monitor"
+database = "mese"
+
+# Redis 3 - Cache and Sessions
+[[databases.redis]]
+name = "mese-redis-cache"
+host = "redis.mese.internal"
+port = 6379
+database = 0
+
+[[databases.redis]]
+name = "mese-redis-sidekiq"
+host = "redis.mese.internal"
+port = 6379
+database = 1
+
+# ThinkingSphinx 5.6.0 - Search
+[[services.sphinx]]
+name = "mese-sphinx"
+host = "sphinx.mese.internal"
+port = 9306
+
+# Puma Web Server
+[[services.puma]]
+name = "mese-puma-web-1"
+url = "http://web1.mese.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+[[services.puma]]
+name = "mese-puma-web-2"
+url = "http://web2.mese.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+# Sidekiq Background Jobs
+[[services.sidekiq]]
+name = "mese-sidekiq"
+redis_url = "redis://redis.mese.internal:6379/1"
+namespace = "mese"
+queues = [
+    "critical",
+    "high",
+    "default",
+    "low",
+    "mailers",
+    "notifications"
+]
+
+# ALMS Integration
+[[services.http]]
+name = "alms-accounts-service"
+url = "http://alms.mese.internal:8000/health"
+method = "GET"
+expected_status = 200
+timeout = "5s"
+headers = { "X-API-Key" = "${ALMS_API_KEY}" }
+
+# System Monitoring
+[system]
+enabled = true
+
+[system.cpu]
+enabled = true
+collect_per_core = true
+
+[system.memory]
+enabled = true
+collect_swap = true
+
+[system.disk]
+enabled = true
+mount_points = ["/", "/var/lib/mysql", "/var/lib/mongodb"]
+
+[system.network]
+enabled = true
+interfaces = ["eth0"]
+
+# Logging
+[logging]
+level = "info"
+format = "json"
+output = "stdout"
+
+# Alerting Thresholds
+[alerts.mysql]
+connections_percent = 80
+slow_queries_per_second = 10
+replication_lag_seconds = 30
+
+[alerts.mongodb]
+connections_percent = 85
+ops_per_second = 10000
+
+[alerts.redis]
+memory_percent = 90
+evicted_keys_per_second = 100
+
+[alerts.puma]
+backlog_threshold = 50
+thread_utilization_percent = 90
+
+[alerts.sidekiq]
+queue_latency_seconds = 300
+dead_jobs_threshold = 100

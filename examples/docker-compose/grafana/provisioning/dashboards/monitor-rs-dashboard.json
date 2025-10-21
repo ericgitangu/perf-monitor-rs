@@ -1,0 +1,363 @@
+{
+  "title": "Monitor-RS System Metrics",
+  "tags": [
+    "monitor-rs",
+    "system",
+    "infrastructure"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "CPU Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "cpu_usage_percent",
+          "legendFormat": "Total CPU",
+          "refId": "A"
+        },
+        {
+          "expr": "cpu_core_usage_percent",
+          "legendFormat": "Core {{core}}",
+          "refId": "B"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "max": 100,
+          "min": 0
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Load Average",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "cpu_load_average{period=\"1m\"}",
+          "legendFormat": "1 min",
+          "refId": "A"
+        },
+        {
+          "expr": "cpu_load_average{period=\"5m\"}",
+          "legendFormat": "5 min",
+          "refId": "B"
+        },
+        {
+          "expr": "cpu_load_average{period=\"15m\"}",
+          "legendFormat": "15 min",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Memory Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "memory_usage_percent",
+          "legendFormat": "Memory %",
+          "refId": "A"
+        },
+        {
+          "expr": "swap_usage_percent",
+          "legendFormat": "Swap %",
+          "refId": "B"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "max": 100,
+          "min": 0
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Memory Breakdown",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "memory_total_bytes",
+          "legendFormat": "Total",
+          "refId": "A"
+        },
+        {
+          "expr": "memory_used_bytes",
+          "legendFormat": "Used",
+          "refId": "B"
+        },
+        {
+          "expr": "memory_available_bytes",
+          "legendFormat": "Available",
+          "refId": "C"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "bytes"
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Network Traffic",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "rate(network_received_bytes_total[1m])",
+          "legendFormat": "RX",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(network_transmitted_bytes_total[1m])",
+          "legendFormat": "TX",
+          "refId": "B"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "Bps"
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Network Rate",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "network_received_rate_bytes_per_second",
+          "legendFormat": "RX Rate",
+          "refId": "A"
+        },
+        {
+          "expr": "network_transmitted_rate_bytes_per_second",
+          "legendFormat": "TX Rate",
+          "refId": "B"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "Bps"
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Disk Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "expr": "disk_usage_percent",
+          "legendFormat": "Overall",
+          "refId": "A"
+        },
+        {
+          "expr": "disk_mount_usage_percent",
+          "legendFormat": "{{mount}}",
+          "refId": "B"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "max": 100,
+          "min": 0
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Disk Space",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "targets": [
+        {
+          "expr": "disk_total_bytes",
+          "legendFormat": "Total",
+          "refId": "A"
+        },
+        {
+          "expr": "disk_used_bytes",
+          "legendFormat": "Used",
+          "refId": "B"
+        },
+        {
+          "expr": "disk_available_bytes",
+          "legendFormat": "Available",
+          "refId": "C"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "bytes"
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Process Count",
+      "type": "singlestat",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 32
+      },
+      "targets": [
+        {
+          "expr": "processes_total",
+          "refId": "A"
+        }
+      ],
+      "format": "short"
+    },
+    {
+      "id": 10,
+      "title": "Running Processes",
+      "type": "singlestat",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 32
+      },
+      "targets": [
+        {
+          "expr": "processes_running",
+          "refId": "A"
+        }
+      ],
+      "format": "short"
+    },
+    {
+      "id": 11,
+      "title": "Service CPU Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "targets": [
+        {
+          "expr": "service_cpu_usage_percent",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent"
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Service Memory Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "targets": [
+        {
+          "expr": "service_memory_bytes",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "bytes"
+        },
+        {
+          "format": "short"
+        }
+      ]
+    }
+  ]
+}

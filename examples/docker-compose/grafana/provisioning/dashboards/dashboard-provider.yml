@@ -1,0 +1,16 @@
+# Grafana dashboard provisioning configuration
+# This automatically imports dashboards from the specified directory
+
+apiVersion: 1
+
+providers:
+  - name: 'Monitor-RS Dashboards'
+    orgId: 1
+    folder: 'Monitor-RS'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: false

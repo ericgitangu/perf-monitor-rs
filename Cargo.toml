@@ -25,10 +25,12 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync"
 mysql_async = { version = "0.34", optional = true }
 tokio-postgres = { version = "0.7", optional = true }
 redis = { version = "0.25", features = ["tokio-comp"], optional = true }
+mongodb = { version = "2.8", optional = true }
 
 # HTTP Server and API
 axum = { version = "0.7", optional = true }
 tower-http = { version = "0.5", features = ["cors", "trace"], optional = true }
+reqwest = { version = "0.11", features = ["json"], optional = true }
 
 # Metrics Export
 prometheus = { version = "0.13", features = ["process"], optional = true }
@@ -69,11 +71,12 @@ tempfile = "3.10"
 
 [features]
 default = ["server", "databases"]
-server = ["tokio", "axum", "tower-http", "prometheus"]
-databases = ["mysql", "postgresql", "redis-db"]
+server = ["tokio", "axum", "tower-http", "prometheus", "reqwest"]
+databases = ["mysql", "postgresql", "redis-db", "mongodb-db"]
 mysql = ["mysql_async", "tokio"]
 postgresql = ["tokio-postgres", "tokio"]
 redis-db = ["redis", "tokio"]
+mongodb-db = ["mongodb", "tokio"]
 gpu-nvidia = []
 gpu-amd = []
 docker = []

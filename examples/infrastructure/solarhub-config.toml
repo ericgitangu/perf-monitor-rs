@@ -1,0 +1,168 @@
+# Solarhub Infrastructure Monitoring Configuration
+# Production-ready configuration for monitoring all solarhub services
+
+[general]
+name = "solarhub"
+environment = "production"
+collection_interval = "15s"
+retention_period = "7d"
+
+# Prometheus metrics export
+[prometheus]
+enabled = true
+port = 9090
+path = "/metrics"
+
+# HTTP API server
+[server]
+enabled = true
+host = "0.0.0.0"
+port = 8080
+
+# MySQL 8.0.18 - Primary Database
+# Tuned with: innodb-buffer-pool-instances=4, innodb-buffer-pool-size=256M
+[[databases.mysql]]
+name = "solarhub-mysql-primary"
+host = "mysql.solarhub.internal"
+port = 3306
+username = "monitor"
+database = "solarhub_production"
+max_connections = 10
+
+[[databases.mysql]]
+name = "solarhub-mysql-replica"
+host = "mysql-replica.solarhub.internal"
+port = 3306
+username = "monitor"
+database = "solarhub_production"
+max_connections = 5
+
+# MongoDB 4.2 - Document Store
+[[databases.mongodb]]
+name = "solarhub-mongodb-primary"
+host = "mongodb.solarhub.internal"
+port = 27017
+username = "monitor"
+database = "solarhub"
+
+[[databases.mongodb]]
+name = "solarhub-mongodb-replica"
+host = "mongodb-replica.solarhub.internal"
+port = 27017
+username = "monitor"
+database = "solarhub"
+
+# Redis 3 - Cache and Sidekiq Backend
+[[databases.redis]]
+name = "solarhub-redis-cache"
+host = "redis.solarhub.internal"
+port = 6379
+database = 0
+
+[[databases.redis]]
+name = "solarhub-redis-sidekiq"
+host = "redis.solarhub.internal"
+port = 6379
+database = 1
+
+# ThinkingSphinx 5.6.0 - Search Engine (MySQL Protocol)
+[[services.sphinx]]
+name = "solarhub-sphinx-search"
+host = "sphinx.solarhub.internal"
+port = 9306
+
+# Puma Web Server - Rails Application Server
+[[services.puma]]
+name = "solarhub-puma-web-1"
+url = "http://web1.solarhub.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+[[services.puma]]
+name = "solarhub-puma-web-2"
+url = "http://web2.solarhub.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+[[services.puma]]
+name = "solarhub-puma-web-3"
+url = "http://web3.solarhub.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+# Sidekiq Background Jobs - Queue Processing
+[[services.sidekiq]]
+name = "solarhub-sidekiq-default"
+redis_url = "redis://redis.solarhub.internal:6379/1"
+namespace = "solarhub"
+queues = [
+    "critical",
+    "high",
+    "default",
+    "low",
+    "mailers",
+    "webhooks",
+    "notifications",
+    "analytics",
+    "reporting"
+]
+
+# ALMS - Python/FastAPI Accounts Service Integration
+[[services.http]]
+name = "alms-accounts-service"
+url = "http://alms.solarhub.internal:8000/health"
+method = "GET"
+expected_status = 200
+timeout = "5s"
+headers = { "X-API-Key" = "${ALMS_API_KEY}" }
+
+# System Monitoring
+[system]
+enabled = true
+
+[system.cpu]
+enabled = true
+collect_per_core = true
+
+[system.memory]
+enabled = true
+collect_swap = true
+
+[system.disk]
+enabled = true
+mount_points = [
+    "/",
+    "/var/lib/mysql",
+    "/var/lib/mongodb",
+    "/var/log"
+]
+
+[system.network]
+enabled = true
+interfaces = ["eth0", "eth1"]
+
+# Logging Configuration
+[logging]
+level = "info"
+format = "json"
+output = "stdout"
+
+# Alerting Thresholds (for future integration)
+[alerts.mysql]
+connections_percent = 80
+slow_queries_per_second = 10
+replication_lag_seconds = 30
+
+[alerts.mongodb]
+connections_percent = 85
+ops_per_second = 10000
+replication_lag_seconds = 30
+
+[alerts.redis]
+memory_percent = 90
+evicted_keys_per_second = 100
+
+[alerts.puma]
+backlog_threshold = 50
+thread_utilization_percent = 90
+
+[alerts.sidekiq]
+queue_latency_seconds = 300
+dead_jobs_threshold = 100

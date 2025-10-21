@@ -7,10 +7,10 @@ This document serves as the central index for all Monitor-RS documentation.
 ```
 docs/
 ├── INDEX.md                    # This file - central navigation
-├── week1/                      # Week 1 implementation docs
-│   ├── OVERVIEW.md            # Week 1 summary and status
+├── implementation/             # Implementation tracking and status
+│   ├── OVERVIEW.md            # Project summary and status
 │   ├── COMPLETED.md           # What was accomplished
-│   └── REMAINING.md           # What's left to do
+│   └── COMPLETION_SUMMARY.md  # Final completion status
 ├── architecture/               # Design and architecture docs
 │   ├── DESIGN.md              # Overall architecture
 │   ├── COLLECTORS.md          # Collector design patterns
@@ -18,12 +18,13 @@ docs/
 ├── guides/                     # User guides
 │   ├── QUICKSTART.md          # Quick start guide
 │   ├── CONFIGURATION.md       # Configuration guide
-│   └── DEVELOPMENT.md         # Development guide
+│   ├── DEVELOPMENT.md         # Development guide
+│   └── APM.md                 # Application Performance Monitoring
 ├── deployment/                 # Deployment documentation
 │   ├── KUBERNETES.md          # K8s deployment
 │   ├── LXC.md                 # LXC deployment
 │   └── STANDALONE.md          # Standalone deployment
-└── REVISED_PLAN.md            # Original 1-week plan (archived)
+└── summary.md                  # Comprehensive implementation summary
 ```
 
 ## 🚀 Quick Navigation
@@ -34,33 +35,39 @@ docs/
 - **[Deployment Guides](deployment/)** - Deploy to K8s, LXC, or standalone
 
 ### For Developers
-- **[Week 1 Progress](week1/OVERVIEW.md)** - Current implementation status
+- **[Implementation Status](implementation/OVERVIEW.md)** - Current project status
 - **[Architecture Design](architecture/DESIGN.md)** - System architecture
 - **[Development Guide](guides/DEVELOPMENT.md)** - Contribute to Monitor-RS
+- **[APM Guide](guides/APM.md)** - Application Performance Monitoring
 
-### Project Planning
-- **[Week 1 Completion Status](week1/COMPLETED.md)** - What's done
-- **[Remaining Work](week1/REMAINING.md)** - What's next
-- **[Original Plan](REVISED_PLAN.md)** - Initial 1-week roadmap
+### Project Status
+- **[Completed Features](implementation/COMPLETED.md)** - What's been accomplished
+- **[Completion Summary](implementation/COMPLETION_SUMMARY.md)** - Final project status
+- **[Implementation Summary](summary.md)** - Comprehensive technical details
 
 ## 📖 Main Documentation
 
 The **[README.md](../README.md)** at the project root is the main entry point and is updated iteratively as we make progress.
 
-## 🗂️ Legacy Documents
+## 🗂️ Documentation Evolution
 
-Previous session documents have been consolidated:
-- Old: `PROGRESS.md`, `SUMMARY.md`, `SESSION_SUMMARY.md`, `DAY3_PROGRESS.md`
-- New: Organized in `docs/week1/`
+Previous documents have been consolidated and reorganized:
+- Removed: `WEEK1_COMPLETE.md`, `WEEK1_WRAPUP.md`, `docs/REVISED_PLAN.md`
+- Consolidated: `IMPLEMENTATION_SUMMARY.md` → `docs/summary.md`
+- Reorganized: `docs/week1/` → `docs/implementation/` (clearer naming)
+- Deleted: `docs/week1/_archive/` (obsolete interim files)
+- Removed: `docs/week1/REMAINING.md` (project complete!)
 
 ## 📝 Document Update Policy
 
 - **README.md**: Updated with each major milestone
-- **docs/week1/COMPLETED.md**: Updated as features are completed
-- **docs/week1/REMAINING.md**: Updated as work items change
+- **docs/summary.md**: Comprehensive implementation details
+- **docs/implementation/COMPLETED.md**: Feature completion tracking
+- **docs/implementation/COMPLETION_SUMMARY.md**: Final status overview
 - **Architecture docs**: Updated when design changes occur
+- **examples/infrastructure/**: Production-ready configuration examples
 
 ---
 
-**Last Updated:** 2025-10-20
-**Version:** 0.1.0 (Week 1 in progress)
+**Last Updated:** 2025-10-22
+**Version:** 0.2.0 (Production ready with real infrastructure examples)

@@ -1,0 +1,219 @@
+# Momoep Infrastructure Monitoring Configuration
+# Payment processing platform with specialized Sidekiq queues
+
+[general]
+name = "momoep"
+environment = "production"
+collection_interval = "10s"  # More frequent due to payment criticality
+retention_period = "30d"      # Longer retention for payment auditing
+
+[prometheus]
+enabled = true
+port = 9091
+path = "/metrics"
+
+[server]
+enabled = true
+host = "0.0.0.0"
+port = 8081
+
+# MySQL 8.0.18 - Payment Transaction Database
+[[databases.mysql]]
+name = "momoep-mysql-primary"
+host = "mysql.momoep.internal"
+port = 3306
+username = "monitor"
+database = "momoep_production"
+max_connections = 15
+
+[[databases.mysql]]
+name = "momoep-mysql-replica-1"
+host = "mysql-replica1.momoep.internal"
+port = 3306
+username = "monitor"
+database = "momoep_production"
+max_connections = 10
+
+[[databases.mysql]]
+name = "momoep-mysql-replica-2"
+host = "mysql-replica2.momoep.internal"
+port = 3306
+username = "monitor"
+database = "momoep_production"
+max_connections = 10
+
+# MongoDB 4.2 - Payment Logs and Analytics
+[[databases.mongodb]]
+name = "momoep-mongodb"
+host = "mongodb.momoep.internal"
+port = 27017
+username = "monitor"
+database = "momoep"
+
+# Redis 3 - Critical for Payment Queue Management
+[[databases.redis]]
+name = "momoep-redis-cache"
+host = "redis.momoep.internal"
+port = 6379
+database = 0
+
+[[databases.redis]]
+name = "momoep-redis-sidekiq"
+host = "redis.momoep.internal"
+port = 6379
+database = 1
+
+[[databases.redis]]
+name = "momoep-redis-sessions"
+host = "redis.momoep.internal"
+port = 6379
+database = 2
+
+# ThinkingSphinx 5.6.0 - Payment Search
+[[services.sphinx]]
+name = "momoep-sphinx"
+host = "sphinx.momoep.internal"
+port = 9306
+
+# Puma Web Server - Payment API
+[[services.puma]]
+name = "momoep-puma-web-1"
+url = "http://web1.momoep.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+[[services.puma]]
+name = "momoep-puma-web-2"
+url = "http://web2.momoep.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+[[services.puma]]
+name = "momoep-puma-web-3"
+url = "http://web3.momoep.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+[[services.puma]]
+name = "momoep-puma-web-4"
+url = "http://web4.momoep.internal:9292/stats"
+token = "${PUMA_STATS_TOKEN}"
+
+# Sidekiq - Specialized Payment Processing Queues
+# 13+ queues for different payment workflows
+[[services.sidekiq]]
+name = "momoep-sidekiq-payment-processing"
+redis_url = "redis://redis.momoep.internal:6379/1"
+namespace = "momoep"
+queues = [
+    # Critical Payment Queues (highest priority)
+    "payment_initiation",
+    "payment_authorization",
+    "payment_capture",
+    "payment_settlement",
+    "payment_refund",
+    "payment_reversal",
+
+    # Payment Validation & Verification
+    "fraud_detection",
+    "kyc_verification",
+    "compliance_check",
+
+    # Payment Provider Integration
+    "mtn_momo_api",
+    "airtel_money_api",
+    "orange_money_api",
+    "vodafone_cash_api",
+
+    # Payment Notifications
+    "payment_webhooks_outbound",
+    "payment_webhooks_inbound",
+    "payment_notifications_sms",
+    "payment_notifications_email",
+    "payment_notifications_push",
+
+    # Payment Reconciliation
+    "daily_reconciliation",
+    "transaction_matching",
+    "settlement_processing",
+
+    # Reporting & Analytics
+    "payment_analytics",
+    "merchant_reporting",
+    "revenue_calculation",
+
+    # General Operations
+    "default",
+    "low",
+    "mailers"
+]
+
+# ALMS Integration - Account Verification
+[[services.http]]
+name = "alms-accounts-service"
+url = "http://alms.momoep.internal:8000/health"
+method = "GET"
+expected_status = 200
+timeout = "3s"
+headers = { "X-API-Key" = "${ALMS_API_KEY}" }
+
+# External Payment Provider Health Checks
+[[services.http]]
+name = "mtn-momo-gateway"
+url = "${MTN_MOMO_API_URL}/health"
+method = "GET"
+expected_status = 200
+timeout = "5s"
+
+[[services.http]]
+name = "airtel-money-gateway"
+url = "${AIRTEL_MONEY_API_URL}/health"
+method = "GET"
+expected_status = 200
+timeout = "5s"
+
+# System Monitoring
+[system]
+enabled = true
+
+[system.cpu]
+enabled = true
+collect_per_core = true
+
+[system.memory]
+enabled = true
+collect_swap = true
+
+[system.disk]
+enabled = true
+mount_points = ["/", "/var/lib/mysql", "/var/lib/mongodb"]
+
+[system.network]
+enabled = true
+interfaces = ["eth0"]
+
+# Logging
+[logging]
+level = "info"
+format = "json"
+output = "stdout"
+
+# Critical Payment Alerting Thresholds
+[alerts.mysql]
+connections_percent = 75
+slow_queries_per_second = 5
+replication_lag_seconds = 10  # Very low tolerance for payment data
+
+[alerts.mongodb]
+connections_percent = 80
+ops_per_second = 15000
+
+[alerts.redis]
+memory_percent = 85
+evicted_keys_per_second = 50  # Critical - queue data must not be evicted
+
+[alerts.puma]
+backlog_threshold = 30        # Lower threshold for payment APIs
+thread_utilization_percent = 85
+
+[alerts.sidekiq]
+queue_latency_seconds = 60    # Payment queues must be fast
+dead_jobs_threshold = 10      # Low tolerance for failed payments
+retry_jobs_threshold = 100
