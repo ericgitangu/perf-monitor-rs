@@ -11,7 +11,13 @@
 ## 🚀 Quick Start
 
 ```bash
-# Build and run
+# Interactive TUI (default)
+cargo run
+
+# Prometheus metrics server
+cargo run -- server
+
+# System snapshot
 cargo run -- snapshot
 
 # Output:
@@ -40,7 +46,7 @@ cargo run -- snapshot
 
 ## 📊 Current Status
 
-**Week 1: 90% Complete** (Days 1-5 complete, Day 6-7 remaining)
+**Week 1: 95% Complete** (Days 1-6 complete, Day 7 remaining)
 
 | Component | Status |
 |-----------|--------|
@@ -51,8 +57,8 @@ cargo run -- snapshot
 | Database Collectors | ✅ Complete (MySQL, PostgreSQL, Redis) |
 | Queue Collectors | ✅ Complete (Sidekiq, RabbitMQ, Celery) |
 | TUI | ✅ Complete (Interactive terminal UI) |
-| Prometheus Export | ⏳ Next (Day 6) |
-| Deployment (K8s/LXC) | ⏳ Planned (Day 7) |
+| Prometheus Export | ✅ Complete (HTTP server + metrics) |
+| Deployment (K8s/LXC) | ⏳ Next (Day 7) |
 
 **[📊 Detailed Progress →](docs/week1/OVERVIEW.md)** | **[✅ Completed Features →](docs/week1/COMPLETED.md)** | **[📋 Remaining Work →](docs/week1/REMAINING.md)**
 
@@ -81,18 +87,37 @@ node - 28 processes, 3.68 GB     ← Your Next.js apps!
 python - 2 processes, 18 MB
 ```
 
-### 🔄 In Progress
+### 🔄 Prometheus Integration
 
-- Queue collectors (Sidekiq, RabbitMQ, Celery)
+**Metrics Server:**
+```bash
+# Start server on default port 9100
+cargo run -- server
+
+# Custom port
+cargo run -- server --listen 0.0.0.0:9090
+```
+
+**Endpoints:**
+- `http://localhost:9100/metrics` - Prometheus/OpenMetrics format
+- `http://localhost:9100/health` - Health check endpoint
+- `http://localhost:9100/` - Service info
+
+**Example Prometheus scrape config:**
+```yaml
+scrape_configs:
+  - job_name: 'monitor-rs'
+    static_configs:
+      - targets: ['localhost:9100']
+```
+
+See `examples/prometheus.yml` for full configuration and `examples/grafana-dashboard.json` for ready-to-import Grafana dashboard.
 
 ### ⏳ Planned
 
-- Sidekiq collector (13+ queues for momoep!)
-- RabbitMQ, Celery collectors
-- Interactive TUI (ratatui)
-- Prometheus metrics export (port 9100)
-- Kubernetes Helm chart
-- LXC container deployment
+- Kubernetes Helm chart (DaemonSet deployment)
+- LXC container configuration
+- Integration tests with real services
 
 ## 💻 Installation & Usage
 
@@ -100,13 +125,19 @@ python - 2 processes, 18 MB
 # Build
 cargo build --release
 
+# Run interactive TUI (default)
+cargo run
+
+# Run Prometheus server
+cargo run -- server
+
 # Run snapshot
 cargo run -- snapshot
 
 # Generate config
 cargo run -- generate-config
 
-# Run tests (32 passing)
+# Run tests (58 passing!)
 cargo test
 ```
 
@@ -233,14 +264,14 @@ impl MetricCollector for MyCollector {
 
 ## 🗺️ Roadmap
 
-**Week 1** (60% complete):
+**Week 1** (95% complete):
 - ✅ System collectors (CPU, Memory, Network, Disk)
 - ✅ Process monitoring + Service detection
 - ✅ Database collectors (MySQL, PostgreSQL, Redis)
-- 🔄 Queue collectors (Sidekiq, RabbitMQ, Celery) - **NEXT**
-- ⏳ TUI (ratatui-based)
-- ⏳ Prometheus export (port 9100)
-- ⏳ Deployment (K8s Helm, LXC)
+- ✅ Queue collectors (Sidekiq, RabbitMQ, Celery)
+- ✅ TUI (ratatui-based)
+- ✅ Prometheus export (port 9100)
+- ⏳ Deployment (K8s Helm, LXC) - **NEXT**
 
 **Future:**
 - Container awareness (Docker, K8s)
@@ -251,13 +282,15 @@ impl MetricCollector for MyCollector {
 
 ## 📊 Stats
 
-- **39 tests** passing (+ 7 new)
-- **27 source files** (~7,200 lines)
-- **8 collectors** working (5 system + 3 database)
+- **58 tests** passing (100% success rate)
+- **41 source files** (~13,500 lines)
+- **11 collectors** working (5 system + 3 database + 3 queue)
 - **Multi-instance** database monitoring
+- **Prometheus export** with OpenMetrics format
+- **Interactive TUI** with real-time updates
 - **<1% CPU** overhead
 - **<30 MB** memory footprint
-- **Async/await** for database connections
+- **Async/await** for database connections and HTTP server
 
 ## 📝 License
 

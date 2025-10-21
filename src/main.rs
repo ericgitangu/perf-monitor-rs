@@ -17,6 +17,9 @@ use std::io;
 use tracing::{info, Level};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
+#[cfg(feature = "server")]
+use monitor_rs::export::start_server;
+
 #[derive(Parser, Debug)]
 #[command(name = "monitor-rs")]
 #[command(version, about = "Real-time system monitor with Prometheus integration", long_about = None)]
@@ -68,7 +71,8 @@ fn init_tracing(log_level: &str) {
         .init();
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     let config = match &cli.config {
@@ -88,9 +92,18 @@ fn main() -> Result<()> {
             Ok(())
         }
         Some(Commands::Server { listen }) => {
-            info!("Starting server mode on {}", listen);
-            println!("Server mode - to be implemented");
-            Ok(())
+            #[cfg(feature = "server")]
+            {
+                info!("Starting server mode on {}", listen);
+                let addr: std::net::SocketAddr = listen.parse()?;
+                start_server(config, addr).await?;
+                Ok(())
+            }
+            #[cfg(not(feature = "server"))]
+            {
+                eprintln!("Error: Server feature not enabled. Rebuild with --features server");
+                std::process::exit(1);
+            }
         }
         Some(Commands::Snapshot) => {
             info!("Collecting system snapshot");

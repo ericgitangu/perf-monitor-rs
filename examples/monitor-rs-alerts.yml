@@ -1,0 +1,130 @@
+# Prometheus alert rules for monitor-rs metrics
+# Include this in your Prometheus configuration
+
+groups:
+  - name: monitor-rs-system
+    interval: 30s
+    rules:
+      # CPU Alerts
+      - alert: HighCPUUsage
+        expr: cpu_usage_percent > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      - alert: CriticalCPUUsage
+        expr: cpu_usage_percent > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Memory Alerts
+      - alert: HighMemoryUsage
+        expr: memory_usage_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      - alert: CriticalMemoryUsage
+        expr: memory_usage_percent > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Disk Alerts
+      - alert: HighDiskUsage
+        expr: disk_usage_percent > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+
+      - alert: CriticalDiskUsage
+        expr: disk_usage_percent > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk usage detected"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+
+      - alert: DiskMountCritical
+        expr: disk_mount_usage_percent > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk mount usage"
+          description: "Mount point {{ $labels.mount }} is {{ $value }}% full on {{ $labels.instance }}"
+
+      # Swap Alerts
+      - alert: HighSwapUsage
+        expr: swap_usage_percent > 50
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High swap usage detected"
+          description: "Swap usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Service Alerts
+      - alert: ServiceHighMemory
+        expr: service_memory_bytes > 2000000000  # 2GB
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Service using high memory"
+          description: "Service {{ $labels.service }} is using {{ $value | humanize }}B on {{ $labels.instance }}"
+
+      - alert: ServiceHighCPU
+        expr: service_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Service using high CPU"
+          description: "Service {{ $labels.service }} is using {{ $value }}% CPU on {{ $labels.instance }}"
+
+      # Network Alerts
+      - alert: HighNetworkTraffic
+        expr: rate(network_received_bytes_total[5m]) > 100000000  # 100MB/s
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "High network receive rate"
+          description: "Network receive rate is {{ $value | humanize }}B/s on {{ $labels.instance }}"
+
+      # Health Check Alerts
+      - alert: MonitorRSDown
+        expr: up{job="monitor-rs"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Monitor-RS is down"
+          description: "Monitor-RS instance {{ $labels.instance }} is not responding"
+
+      - alert: MonitorRSStaleMetrics
+        expr: time() - timestamp(cpu_usage_percent) > 60
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Monitor-RS metrics are stale"
+          description: "Metrics from {{ $labels.instance }} haven't been updated in over 60 seconds"
