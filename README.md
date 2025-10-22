@@ -2,14 +2,14 @@
 
 **Your Swiss Army Knife for Infrastructure Monitoring**
 
-[![Tests](https://img.shields.io/badge/tests-64%20passing-brightgreen)](https://github.com/ericgitangu/performance_benchmarker/actions)
+[![Tests](https://img.shields.io/badge/tests-64%20passing-brightgreen)](https://github.com/ericgitangu/perf-monitor-rs/actions)
 [![Rust](https://img.shields.io/badge/rust-1.83%2B-orange)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
 [![Production Ready](https://img.shields.io/badge/production-ready-success)](configs/production/)
 [![Docker](https://img.shields.io/badge/docker-supported-2496ED?logo=docker&logoColor=white)](deploy/Dockerfile)
 [![Kubernetes](https://img.shields.io/badge/kubernetes-ready-326CE5?logo=kubernetes&logoColor=white)](deploy/kubernetes/)
 [![Implementation](https://img.shields.io/badge/implementation-120%25%20complete-success)](docs/implementation/COMPLETION_SUMMARY.md)
-[![GitHub Stars](https://img.shields.io/github/stars/ericgitangu/performance_benchmarker?style=social)](https://github.com/ericgitangu/performance_benchmarker)
+[![GitHub Stars](https://img.shields.io/github/stars/ericgitangu/perf-monitor-rs?style=social)](https://github.com/ericgitangu/perf-monitor-rs)
 [![Documentation](https://img.shields.io/badge/docs-comprehensive-blue)](docs/summary.md)
 
 > **Service-aware infrastructure monitoring in Rust.** Not just metrics—context. Not just processes—services. Built for modern stacks: Rails, Node.js, databases, queues, and everything in between.
@@ -43,8 +43,10 @@ Built for **production Rails and Python microservices**, with native support for
 ✅ **Search Monitoring** - ThinkingSphinx query time, index stats, document counts
 ✅ **Prometheus Export** - 50+ metrics in OpenMetrics format
 ✅ **Interactive TUI** - Real-time dashboard in your terminal
-✅ **Deploy Anywhere** - Kubernetes (Helm), LXC, bare metal
+✅ **Deploy Anywhere** - Kubernetes (Helm), LXC, Docker, bare metal
 ✅ **Blazing Fast** - <1% CPU overhead, <30MB memory
+✅ **Battle-Tested** - 64 passing tests, production-ready codebase
+✅ **Zero Dependencies** - No external agents, pure Rust implementation
 
 ---
 
@@ -53,8 +55,8 @@ Built for **production Rails and Python microservices**, with native support for
 ### 1. Install
 
 ```bash
-git clone https://github.com/ericgitangu/performance_benchmarker.git
-cd performance_benchmarker
+git clone https://github.com/ericgitangu/perf-monitor-rs.git
+cd perf-monitor-rs
 cargo build --release
 ```
 
@@ -540,8 +542,8 @@ sudo lxc-start -n monitor-rs
 sudo lxc-attach -n monitor-rs
 # Inside container:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-git clone https://github.com/ericgitangu/performance_benchmarker.git
-cd performance_benchmarker
+git clone https://github.com/ericgitangu/perf-monitor-rs.git
+cd perf-monitor-rs
 cargo build --release --features server
 cp target/release/monitor-rs /usr/local/bin/
 ```
@@ -1026,9 +1028,9 @@ Built with amazing Rust crates:
 
 ## 🔗 Links
 
-- **Repository:** [github.com/ericgitangu/performance_benchmarker](https://github.com/ericgitangu/performance_benchmarker)
-- **Issues:** [github.com/ericgitangu/performance_benchmarker/issues](https://github.com/ericgitangu/performance_benchmarker/issues)
-- **Releases:** [github.com/ericgitangu/performance_benchmarker/releases](https://github.com/ericgitangu/performance_benchmarker/releases)
+- **Repository:** [github.com/ericgitangu/perf-monitor-rs](https://github.com/ericgitangu/perf-monitor-rs)
+- **Issues:** [github.com/ericgitangu/perf-monitor-rs/issues](https://github.com/ericgitangu/perf-monitor-rs/issues)
+- **Releases:** [github.com/ericgitangu/perf-monitor-rs/releases](https://github.com/ericgitangu/perf-monitor-rs/releases)
 
 ---
 
