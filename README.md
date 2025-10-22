@@ -34,19 +34,19 @@ Built for **production Rails and Python microservices**, with native support for
 
 ### Why Monitor-RS?
 
-✅ **Production-Ready Examples** - 5 real infrastructure configs (solarhub, momoep, moto, mese, ALMS)
-✅ **Service-Aware** - Detects MySQL, MongoDB, Redis, Sphinx, Puma, Sidekiq, Celery
-✅ **Multi-Core Ready** - Per-core CPU metrics across all nodes
-✅ **Database Deep Metrics** - Connections, QPS, replication lag, buffer pool efficiency
-✅ **Queue Monitoring** - Sidekiq (25+ queues), RabbitMQ, Celery with latency tracking
-✅ **Web Server Stats** - Puma backlog, thread pool usage, worker details
-✅ **Search Monitoring** - ThinkingSphinx query time, index stats, document counts
-✅ **Prometheus Export** - 50+ metrics in OpenMetrics format
-✅ **Interactive TUI** - Real-time dashboard in your terminal
-✅ **Deploy Anywhere** - Kubernetes (Helm), LXC, Docker, bare metal
-✅ **Blazing Fast** - <1% CPU overhead, <30MB memory
-✅ **Battle-Tested** - 64 passing tests, production-ready codebase
-✅ **Zero Dependencies** - No external agents, pure Rust implementation
+✅ **Production-Ready Examples** - 5 real infrastructure configs (solarhub, momoep, moto, mese, ALMS)  
+✅ **Service-Aware** - Detects MySQL, MongoDB, Redis, Sphinx, Puma, Sidekiq, Celery  
+✅ **Multi-Core Ready** - Per-core CPU metrics across all nodes  
+✅ **Database Deep Metrics** - Connections, QPS, replication lag, buffer pool efficiency  
+✅ **Queue Monitoring** - Sidekiq (25+ queues), RabbitMQ, Celery with latency tracking  
+✅ **Web Server Stats** - Puma backlog, thread pool usage, worker details  
+✅ **Search Monitoring** - ThinkingSphinx query time, index stats, document counts  
+✅ **Prometheus Export** - 50+ metrics in OpenMetrics format  
+✅ **Interactive TUI** - Real-time dashboard in your terminal  
+✅ **Deploy Anywhere** - Kubernetes (Helm), LXC, Docker, bare metal  
+✅ **Blazing Fast** - <1% CPU overhead, <30MB memory  
+✅ **Battle-Tested** - 64 passing tests, production-ready codebase  
+✅ **Zero Dependencies** - No external agents, pure Rust implementation  
 
 ---
 
