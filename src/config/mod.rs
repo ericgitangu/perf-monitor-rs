@@ -145,7 +145,7 @@ impl Config {
 
     pub fn load_from_file(path: &str) -> crate::Result<Self> {
         let config = Figment::new()
-            .merge(Toml::file(path).nested())
+            .merge(Toml::file(path))
             .merge(Env::prefixed("MONITOR_"))
             .extract()?;
 

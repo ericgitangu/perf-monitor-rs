@@ -82,19 +82,19 @@ For a complete infrastructure (e.g., solarhub + momoep + moto + mese + ALMS), ru
 
 ```bash
 # Terminal 1 - Solarhub monitoring (port 9090)
-monitor-rs --config examples/infrastructure/solarhub-config.toml
+monitor-rs --config configs/production/solarhub-config.toml
 
 # Terminal 2 - Momoep monitoring (port 9091)
-monitor-rs --config examples/infrastructure/momoep-config.toml
+monitor-rs --config configs/production/momoep-config.toml
 
 # Terminal 3 - Moto monitoring (port 9092)
-monitor-rs --config examples/infrastructure/moto-config.toml
+monitor-rs --config configs/production/moto-config.toml
 
 # Terminal 4 - Mese monitoring (port 9093)
-monitor-rs --config examples/infrastructure/mese-config.toml
+monitor-rs --config configs/production/mese-config.toml
 
 # Terminal 5 - ALMS monitoring (port 9094)
-monitor-rs --config examples/infrastructure/accounts-alms-config.toml
+monitor-rs --config configs/production/accounts-alms-config.toml
 ```
 
 ### Prometheus Aggregation
@@ -842,6 +842,6 @@ Monitor-RS provides comprehensive infrastructure monitoring covering:
 
 **Related Documentation:**
 
-- [Production Infrastructure Examples](../../examples/infrastructure/README.md)
+- [Production Infrastructure Examples](../../configs/production/README.md)
 - [Week 1 Implementation Summary](../summary.md)
-- [Docker Compose Guide](../../examples/docker-compose/README.md)
+- [Docker Compose Guide](../../deploy/docker-compose/README.md)

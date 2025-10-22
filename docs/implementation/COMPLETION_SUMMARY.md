@@ -47,7 +47,7 @@ Beyond the original scope, we added:
 
 ### 5 Production Infrastructure Examples
 
-Created real-world configurations in `examples/infrastructure/`:
+Created real-world configurations in `configs/production/`:
 
 **1. solarhub-config.toml** (~150 lines)
 - Standard Rails stack
@@ -83,7 +83,7 @@ Created real-world configurations in `examples/infrastructure/`:
 - Account-specific alerting
 - **Status:** ✅ Complete
 
-**Infrastructure README** (`examples/infrastructure/README.md` - 450 lines)
+**Infrastructure README** (`configs/production/README.md` - 450 lines)
 - Complete guide for all 5 configurations
 - Component documentation
 - Troubleshooting workflows
@@ -207,13 +207,13 @@ All configurations can be deployed immediately:
 
 ```bash
 # Monitor solarhub
-monitor-rs --config examples/infrastructure/solarhub-config.toml
+monitor-rs --config configs/production/solarhub-config.toml
 
 # Monitor momoep payment platform
-monitor-rs --config examples/infrastructure/momoep-config.toml
+monitor-rs --config configs/production/momoep-config.toml
 
 # Monitor ALMS accounts service
-monitor-rs --config examples/infrastructure/accounts-alms-config.toml
+monitor-rs --config configs/production/accounts-alms-config.toml
 ```
 
 **Prometheus scraping:**
@@ -233,7 +233,7 @@ monitor-rs --config examples/infrastructure/accounts-alms-config.toml
 | **CHANGELOG.md** | 470+ | ✅ Complete history (v0.1.0 + v0.2.0) |
 | **docs/summary.md** | 1,400+ | ✅ Comprehensive implementation summary |
 | **docs/guides/APM.md** | 650+ | ✅ Complete APM guide |
-| **examples/infrastructure/README.md** | 450+ | ✅ Infrastructure guide |
+| **configs/production/README.md** | 450+ | ✅ Infrastructure guide |
 | **docs/implementation/COMPLETED.md** | 610+ | ✅ Week 1 completion details |
 | **docs/implementation/COMPLETION_SUMMARY.md** | This file | ✅ Final summary |
 

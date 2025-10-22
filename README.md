@@ -2,11 +2,14 @@
 
 **Your Swiss Army Knife for Infrastructure Monitoring**
 
-[![Tests](https://img.shields.io/badge/tests-58%20passing-brightgreen)](https://github.com/ericgitangu/perf-monitor-rs/actions)
-[![Rust](https://img.shields.io/badge/rust-1.75%2B-orange)](https://www.rust-lang.org)
+[![Tests](https://img.shields.io/badge/tests-64%20passing-brightgreen)](https://github.com/ericgitangu/performance_benchmarker/actions)
+[![Rust](https://img.shields.io/badge/rust-1.83%2B-orange)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
+[![Production Ready](https://img.shields.io/badge/production-ready-success)](configs/production/)
+[![Docker](https://img.shields.io/badge/docker-supported-2496ED?logo=docker&logoColor=white)](deploy/Dockerfile)
+[![Kubernetes](https://img.shields.io/badge/kubernetes-ready-326CE5?logo=kubernetes&logoColor=white)](deploy/kubernetes/)
 [![Implementation](https://img.shields.io/badge/implementation-120%25%20complete-success)](docs/implementation/COMPLETION_SUMMARY.md)
-[![GitHub Stars](https://img.shields.io/github/stars/ericgitangu/perf-monitor-rs?style=social)](https://github.com/ericgitangu/perf-monitor-rs)
+[![GitHub Stars](https://img.shields.io/github/stars/ericgitangu/performance_benchmarker?style=social)](https://github.com/ericgitangu/performance_benchmarker)
 [![Documentation](https://img.shields.io/badge/docs-comprehensive-blue)](docs/summary.md)
 
 > **Service-aware infrastructure monitoring in Rust.** Not just metrics—context. Not just processes—services. Built for modern stacks: Rails, Node.js, databases, queues, and everything in between.
@@ -50,8 +53,8 @@ Built for **production Rails and Python microservices**, with native support for
 ### 1. Install
 
 ```bash
-git clone https://github.com/ericgitangu/perf-monitor-rs.git
-cd perf-monitor-rs
+git clone https://github.com/ericgitangu/performance_benchmarker.git
+cd performance_benchmarker
 cargo build --release
 ```
 
@@ -88,7 +91,7 @@ Monitor-RS includes **5 production-ready configurations** for real-world infrast
 
 ### 1. **Solarhub** - Standard Rails Application
 ```bash
-monitor-rs --config examples/infrastructure/solarhub-config.toml
+monitor-rs --config configs/production/solarhub-config.toml
 ```
 - MySQL 8.0.18 (primary + replica)
 - MongoDB 4.2 (primary + replica)
@@ -100,7 +103,7 @@ monitor-rs --config examples/infrastructure/solarhub-config.toml
 
 ### 2. **Momoep** - Payment Processing Platform
 ```bash
-monitor-rs --config examples/infrastructure/momoep-config.toml
+monitor-rs --config configs/production/momoep-config.toml
 ```
 - **High-availability MySQL** (primary + 2 replicas for transactions)
 - MongoDB 4.2 (payment logs, analytics)
@@ -116,17 +119,17 @@ monitor-rs --config examples/infrastructure/momoep-config.toml
 
 ### 3. **Moto** - Standard Rails Application
 ```bash
-monitor-rs --config examples/infrastructure/moto-config.toml
+monitor-rs --config configs/production/moto-config.toml
 ```
 
 ### 4. **Mese** - Standard Rails Application
 ```bash
-monitor-rs --config examples/infrastructure/mese-config.toml
+monitor-rs --config configs/production/mese-config.toml
 ```
 
 ### 5. **ALMS** - Python/FastAPI Accounts Microservice
 ```bash
-monitor-rs --config examples/infrastructure/accounts-alms-config.toml
+monitor-rs --config configs/production/accounts-alms-config.toml
 ```
 - **PostgreSQL** (not MySQL) with primary + replica
 - Redis for sessions and caching
@@ -134,7 +137,7 @@ monitor-rs --config examples/infrastructure/accounts-alms-config.toml
 - **Celery** (not Sidekiq) for background tasks
 - Account-specific alerting (failed logins, verification timeouts)
 
-**[📖 Full Infrastructure Guide →](examples/infrastructure/README.md)**
+**[📖 Full Infrastructure Guide →](configs/production/README.md)**
 
 ---
 
@@ -350,7 +353,7 @@ cpu_core_usage_percent > 80
 
 ### Grafana Visualization
 
-Import `examples/grafana-dashboard.json` for:
+Import `deploy/templates/grafana-dashboard.json` for:
 
 - **Heatmap** - All cores across all nodes
 - **Time series** - Core usage trends
@@ -537,8 +540,8 @@ sudo lxc-start -n monitor-rs
 sudo lxc-attach -n monitor-rs
 # Inside container:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-git clone https://github.com/ericgitangu/perf-monitor-rs.git
-cd perf-monitor-rs
+git clone https://github.com/ericgitangu/performance_benchmarker.git
+cd performance_benchmarker
 cargo build --release --features server
 cp target/release/monitor-rs /usr/local/bin/
 ```
@@ -698,13 +701,13 @@ predict_linear(disk_used_bytes[1h], 4*3600) > disk_total_bytes * 0.9
 Get Prometheus + Grafana running in 30 seconds:
 
 ```bash
-cd examples/docker-compose
+cd deploy/docker-compose
 docker-compose up -d
 ```
 
 Then open http://localhost:8080 and import the dashboard.
 
-**[📖 Full Docker Compose Guide →](examples/docker-compose/README.md)**
+**[📖 Full Docker Compose Guide →](deploy/docker-compose/README.md)**
 
 **Option 2: Manual Import**
 
@@ -712,11 +715,11 @@ If you already have Grafana:
 
 1. Open Grafana
 2. Dashboards → Import
-3. Upload `examples/grafana-dashboard.json`
+3. Upload `deploy/templates/grafana-dashboard.json`
 4. Select Prometheus datasource
 5. Done! 12 panels with all metrics
 
-**[📖 Example Configs →](examples/)**
+**[📖 Deployment Templates →](deploy/templates/)**
 
 ---
 
@@ -978,12 +981,12 @@ cargo bench
 ## 📚 Documentation
 
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
-- **[Docker Compose Guide](examples/docker-compose/README.md)** - Prometheus + Grafana stack
+- **[Docker Compose Guide](deploy/docker-compose/README.md)** - Prometheus + Grafana stack
 - **[Kubernetes Guide](deploy/kubernetes/README.md)** - K8s deployment
 - **[LXC Guide](deploy/lxc/README.md)** - LXC deployment
-- **[Prometheus Config](examples/prometheus.yml)** - Scrape config
-- **[Alert Rules](examples/monitor-rs-alerts.yml)** - 13 alert rules
-- **[Grafana Dashboard](examples/grafana-dashboard.json)** - Import-ready
+- **[Prometheus Config](deploy/templates/prometheus.yml)** - Scrape config
+- **[Alert Rules](deploy/templates/monitor-rs-alerts.yml)** - 13 alert rules
+- **[Grafana Dashboard](deploy/templates/grafana-dashboard.json)** - Import-ready
 
 ---
 
@@ -1023,9 +1026,9 @@ Built with amazing Rust crates:
 
 ## 🔗 Links
 
-- **Repository:** [github.com/ericgitangu/perf-monitor-rs](https://github.com/ericgitangu/perf-monitor-rs)
-- **Issues:** [github.com/ericgitangu/perf-monitor-rs/issues](https://github.com/ericgitangu/perf-monitor-rs/issues)
-- **Releases:** [github.com/ericgitangu/perf-monitor-rs/releases](https://github.com/ericgitangu/perf-monitor-rs/releases)
+- **Repository:** [github.com/ericgitangu/performance_benchmarker](https://github.com/ericgitangu/performance_benchmarker)
+- **Issues:** [github.com/ericgitangu/performance_benchmarker/issues](https://github.com/ericgitangu/performance_benchmarker/issues)
+- **Releases:** [github.com/ericgitangu/performance_benchmarker/releases](https://github.com/ericgitangu/performance_benchmarker/releases)
 
 ---
 

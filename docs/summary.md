@@ -334,13 +334,13 @@ instances = [
 
 **Configuration Examples Created:**
 
-**Prometheus Scrape Config** (`examples/prometheus.yml` - 75 lines)
+**Prometheus Scrape Config** (`deploy/templates/prometheus.yml` - 75 lines)
 - Static targets configuration
 - Kubernetes service discovery with pod relabeling
 - Health check endpoint scraping
 - Example vhost handling
 
-**Alert Rules** (`examples/monitor-rs-alerts.yml` - 155 lines)
+**Alert Rules** (`deploy/templates/monitor-rs-alerts.yml` - 155 lines)
 - 13 alert rules across 3 severity levels (info, warning, critical)
 - CPU alerts (high usage, critical usage)
 - Memory alerts (high usage, critical usage)
@@ -350,7 +350,7 @@ instances = [
 - Network traffic alerts
 - Health check and staleness alerts
 
-**Grafana Dashboard** (`examples/grafana-dashboard.json` - 224 lines)
+**Grafana Dashboard** (`deploy/templates/grafana-dashboard.json` - 224 lines)
 - 12 panels covering all metrics
 - CPU usage graph with per-core breakdown
 - Load average trends
@@ -427,7 +427,7 @@ instances = [
 
 ### Production Infrastructure Examples
 
-Created 5 comprehensive configuration files in `examples/infrastructure/`:
+Created 5 comprehensive configuration files in `configs/production/`:
 
 **1. solarhub-config.toml** (~150 lines)
 - MySQL 8.0.18 (primary + replica)
@@ -476,7 +476,7 @@ Created 5 comprehensive configuration files in `examples/infrastructure/`:
 - Celery queues: account_creation, account_verification, account_updates, password_resets, email/SMS verification, notifications, audit_logging
 - Account-specific alerting (failed logins, verification timeouts)
 
-**Infrastructure README** (`examples/infrastructure/README.md` - 450+ lines)
+**Infrastructure README** (`configs/production/README.md` - 450+ lines)
 - Detailed explanation of all 5 configurations
 - Common infrastructure components documentation
 - Environment variables and alerting strategies
@@ -1183,19 +1183,19 @@ scrape_configs:
 
 ### Example Configurations
 
-1. **Prometheus Scrape Config** (`examples/prometheus.yml`)
+1. **Prometheus Scrape Config** (`deploy/templates/prometheus.yml`)
    - Static targets
    - Kubernetes service discovery
    - Relabel configs
 
-2. **Alert Rules** (`examples/monitor-rs-alerts.yml`)
+2. **Alert Rules** (`deploy/templates/monitor-rs-alerts.yml`)
    - 13 alert rules
    - 3 severity levels
    - CPU, memory, disk alerts
    - Service alerts
    - Health checks
 
-3. **Grafana Dashboard** (`examples/grafana-dashboard.json`)
+3. **Grafana Dashboard** (`deploy/templates/grafana-dashboard.json`)
    - 12 panels
    - All metrics covered
    - Ready-to-import

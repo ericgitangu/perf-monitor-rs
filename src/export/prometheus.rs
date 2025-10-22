@@ -1,6 +1,15 @@
 use crate::collectors::*;
 use std::fmt::Write;
 
+#[cfg(feature = "mysql")]
+use crate::collectors::services::MySQLMetrics;
+
+#[cfg(feature = "postgresql")]
+use crate::collectors::services::PostgreSQLMetrics;
+
+#[cfg(feature = "redis-db")]
+use crate::collectors::services::RedisMetrics;
+
 /// Prometheus metrics exporter
 pub struct PrometheusExporter;
 
@@ -10,12 +19,25 @@ impl PrometheusExporter {
     }
 
     /// Export all metrics in Prometheus/OpenMetrics format
+    #[allow(clippy::too_many_arguments)]
     pub fn export_all(
         cpu: Option<&CpuMetrics>,
         memory: Option<&MemoryMetrics>,
         network: Option<&NetworkMetrics>,
         disk: Option<&DiskMetrics>,
         processes: Option<&ProcessMetrics>,
+        #[cfg(feature = "mysql")]
+        mysql: Option<&MySQLMetrics>,
+        #[cfg(not(feature = "mysql"))]
+        _mysql: Option<&()>,
+        #[cfg(feature = "postgresql")]
+        postgresql: Option<&PostgreSQLMetrics>,
+        #[cfg(not(feature = "postgresql"))]
+        _postgresql: Option<&()>,
+        #[cfg(feature = "redis-db")]
+        redis: Option<&RedisMetrics>,
+        #[cfg(not(feature = "redis-db"))]
+        _redis: Option<&()>,
     ) -> String {
         let mut output = String::new();
 
@@ -45,6 +67,21 @@ impl PrometheusExporter {
 
         if let Some(processes) = processes {
             Self::export_processes(&mut output, processes);
+        }
+
+        #[cfg(feature = "mysql")]
+        if let Some(mysql) = mysql {
+            Self::export_mysql(&mut output, mysql);
+        }
+
+        #[cfg(feature = "postgresql")]
+        if let Some(postgresql) = postgresql {
+            Self::export_postgresql(&mut output, postgresql);
+        }
+
+        #[cfg(feature = "redis-db")]
+        if let Some(redis) = redis {
+            Self::export_redis(&mut output, redis);
         }
 
         output
@@ -494,6 +531,295 @@ impl PrometheusExporter {
         }
         writeln!(output).ok();
     }
+
+    #[cfg(feature = "mysql")]
+    fn export_mysql(output: &mut String, mysql: &MySQLMetrics) {
+        writeln!(output, "# HELP mysql_up MySQL instance availability (1 = up, 0 = down)").ok();
+        writeln!(output, "# TYPE mysql_up gauge").ok();
+        for instance in &mysql.instances {
+            writeln!(
+                output,
+                "mysql_up{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                instance.name, instance.host, instance.port, if instance.available { 1 } else { 0 }
+            ).ok();
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP mysql_connections Current MySQL connections").ok();
+        writeln!(output, "# TYPE mysql_connections gauge").ok();
+        for instance in &mysql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "mysql_connections{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.connections
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP mysql_threads_running Number of running threads").ok();
+        writeln!(output, "# TYPE mysql_threads_running gauge").ok();
+        for instance in &mysql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "mysql_threads_running{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.threads_running
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP mysql_queries_per_second Queries per second").ok();
+        writeln!(output, "# TYPE mysql_queries_per_second gauge").ok();
+        for instance in &mysql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "mysql_queries_per_second{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.queries_per_second
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP mysql_slow_queries_total Total slow queries").ok();
+        writeln!(output, "# TYPE mysql_slow_queries_total counter").ok();
+        for instance in &mysql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "mysql_slow_queries_total{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.slow_queries
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP mysql_uptime_seconds MySQL uptime in seconds").ok();
+        writeln!(output, "# TYPE mysql_uptime_seconds counter").ok();
+        for instance in &mysql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "mysql_uptime_seconds{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.uptime_seconds
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+    }
+
+    #[cfg(feature = "postgresql")]
+    fn export_postgresql(output: &mut String, postgresql: &PostgreSQLMetrics) {
+        writeln!(output, "# HELP postgresql_up PostgreSQL instance availability (1 = up, 0 = down)").ok();
+        writeln!(output, "# TYPE postgresql_up gauge").ok();
+        for instance in &postgresql.instances {
+            writeln!(
+                output,
+                "postgresql_up{{instance=\"{}\",host=\"{}\",port=\"{}\",database=\"{}\"}} {}",
+                instance.name, instance.host, instance.port, instance.database, if instance.available { 1 } else { 0 }
+            ).ok();
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP postgresql_connections Current PostgreSQL connections").ok();
+        writeln!(output, "# TYPE postgresql_connections gauge").ok();
+        for instance in &postgresql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "postgresql_connections{{instance=\"{}\",host=\"{}\",port=\"{}\",database=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.database, instance.connections
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP postgresql_max_connections Maximum allowed connections").ok();
+        writeln!(output, "# TYPE postgresql_max_connections gauge").ok();
+        for instance in &postgresql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "postgresql_max_connections{{instance=\"{}\",host=\"{}\",port=\"{}\",database=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.database, instance.max_connections
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP postgresql_active_connections Number of active connections").ok();
+        writeln!(output, "# TYPE postgresql_active_connections gauge").ok();
+        for instance in &postgresql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "postgresql_active_connections{{instance=\"{}\",host=\"{}\",port=\"{}\",database=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.database, instance.active_connections
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP postgresql_cache_hit_ratio Cache hit ratio (0-1)").ok();
+        writeln!(output, "# TYPE postgresql_cache_hit_ratio gauge").ok();
+        for instance in &postgresql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "postgresql_cache_hit_ratio{{instance=\"{}\",host=\"{}\",port=\"{}\",database=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.database, instance.cache_hit_ratio
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP postgresql_transactions_per_second Transactions per second").ok();
+        writeln!(output, "# TYPE postgresql_transactions_per_second gauge").ok();
+        for instance in &postgresql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "postgresql_transactions_per_second{{instance=\"{}\",host=\"{}\",port=\"{}\",database=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.database, instance.transactions_per_second
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP postgresql_database_size_bytes Database size in bytes").ok();
+        writeln!(output, "# TYPE postgresql_database_size_bytes gauge").ok();
+        for instance in &postgresql.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "postgresql_database_size_bytes{{instance=\"{}\",host=\"{}\",port=\"{}\",database=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.database, instance.database_size_bytes
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+    }
+
+    #[cfg(feature = "redis-db")]
+    fn export_redis(output: &mut String, redis: &RedisMetrics) {
+        writeln!(output, "# HELP redis_up Redis instance availability (1 = up, 0 = down)").ok();
+        writeln!(output, "# TYPE redis_up gauge").ok();
+        for instance in &redis.instances {
+            writeln!(
+                output,
+                "redis_up{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                instance.name, instance.host, instance.port, if instance.available { 1 } else { 0 }
+            ).ok();
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP redis_connected_clients Number of connected clients").ok();
+        writeln!(output, "# TYPE redis_connected_clients gauge").ok();
+        for instance in &redis.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "redis_connected_clients{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.connected_clients
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP redis_used_memory_bytes Used memory in bytes").ok();
+        writeln!(output, "# TYPE redis_used_memory_bytes gauge").ok();
+        for instance in &redis.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "redis_used_memory_bytes{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.used_memory_bytes
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP redis_memory_fragmentation_ratio Memory fragmentation ratio").ok();
+        writeln!(output, "# TYPE redis_memory_fragmentation_ratio gauge").ok();
+        for instance in &redis.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "redis_memory_fragmentation_ratio{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.memory_fragmentation_ratio
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP redis_ops_per_second Operations per second").ok();
+        writeln!(output, "# TYPE redis_ops_per_second gauge").ok();
+        for instance in &redis.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "redis_ops_per_second{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.ops_per_second
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP redis_hit_rate Cache hit rate (0-1)").ok();
+        writeln!(output, "# TYPE redis_hit_rate gauge").ok();
+        for instance in &redis.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "redis_hit_rate{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.hit_rate
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP redis_keyspace_hits_total Total keyspace hits").ok();
+        writeln!(output, "# TYPE redis_keyspace_hits_total counter").ok();
+        for instance in &redis.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "redis_keyspace_hits_total{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.keyspace_hits
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP redis_keyspace_misses_total Total keyspace misses").ok();
+        writeln!(output, "# TYPE redis_keyspace_misses_total counter").ok();
+        for instance in &redis.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "redis_keyspace_misses_total{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.keyspace_misses
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+
+        writeln!(output, "# HELP redis_uptime_seconds Redis uptime in seconds").ok();
+        writeln!(output, "# TYPE redis_uptime_seconds counter").ok();
+        for instance in &redis.instances {
+            if instance.available {
+                writeln!(
+                    output,
+                    "redis_uptime_seconds{{instance=\"{}\",host=\"{}\",port=\"{}\"}} {}",
+                    instance.name, instance.host, instance.port, instance.uptime_seconds
+                ).ok();
+            }
+        }
+        writeln!(output).ok();
+    }
 }
 
 impl Default for PrometheusExporter {
@@ -515,7 +841,7 @@ mod tests {
             load_average: (1.5, 1.2, 0.9),
         };
 
-        let output = PrometheusExporter::export_all(Some(&cpu), None, None, None, None);
+        let output = PrometheusExporter::export_all(Some(&cpu), None, None, None, None, None, None, None);
 
         assert!(output.contains("cpu_usage_percent 45.5"));
         assert!(output.contains("cpu_cores_total 8"));
@@ -537,7 +863,7 @@ mod tests {
             swap_free: 3_000_000_000,
         };
 
-        let output = PrometheusExporter::export_all(None, Some(&memory), None, None, None);
+        let output = PrometheusExporter::export_all(None, Some(&memory), None, None, None, None, None, None);
 
         assert!(output.contains("memory_total_bytes 16000000000"));
         assert!(output.contains("memory_used_bytes 8000000000"));
@@ -547,7 +873,7 @@ mod tests {
 
     #[test]
     fn test_export_empty_metrics() {
-        let output = PrometheusExporter::export_all(None, None, None, None, None);
+        let output = PrometheusExporter::export_all(None, None, None, None, None, None, None, None);
 
         assert!(output.contains("Monitor-RS Metrics Export"));
         assert!(!output.contains("cpu_usage_percent"));

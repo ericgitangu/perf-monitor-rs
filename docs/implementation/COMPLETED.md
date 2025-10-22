@@ -543,7 +543,7 @@ Snapshot::new()
 
 ### Configuration Examples
 **Status:** ✅ Complete
-**Files:** `examples/prometheus.yml`, `examples/monitor-rs-alerts.yml`, `examples/grafana-dashboard.json`
+**Files:** `deploy/templates/prometheus.yml`, `deploy/templates/monitor-rs-alerts.yml`, `deploy/templates/grafana-dashboard.json`
 
 **Created:**
 - Prometheus scrape config (static + K8s discovery)

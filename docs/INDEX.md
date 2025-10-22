@@ -65,7 +65,7 @@ Previous documents have been consolidated and reorganized:
 - **docs/implementation/COMPLETED.md**: Feature completion tracking
 - **docs/implementation/COMPLETION_SUMMARY.md**: Final status overview
 - **Architecture docs**: Updated when design changes occur
-- **examples/infrastructure/**: Production-ready configuration examples
+- **configs/production/**: Production-ready configuration examples
 
 ---
 

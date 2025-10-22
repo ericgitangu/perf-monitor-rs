@@ -14,7 +14,16 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::interval;
-use tracing::info;
+use tracing::{info, warn};
+
+#[cfg(feature = "mysql")]
+use crate::collectors::services::{MySQLCollector, MySQLMetrics};
+
+#[cfg(feature = "postgresql")]
+use crate::collectors::services::{PostgreSQLCollector, PostgreSQLMetrics};
+
+#[cfg(feature = "redis-db")]
+use crate::collectors::services::{RedisCollector, RedisMetrics};
 
 /// Shared application state for the metrics server
 #[derive(Clone)]
@@ -30,6 +39,16 @@ pub struct MetricsCache {
     pub network: Option<NetworkMetrics>,
     pub disk: Option<DiskMetrics>,
     pub processes: Option<ProcessMetrics>,
+
+    #[cfg(feature = "mysql")]
+    pub mysql: Option<MySQLMetrics>,
+
+    #[cfg(feature = "postgresql")]
+    pub postgresql: Option<PostgreSQLMetrics>,
+
+    #[cfg(feature = "redis-db")]
+    pub redis: Option<RedisMetrics>,
+
     pub last_update: Option<std::time::Instant>,
 }
 
@@ -56,6 +75,18 @@ async fn metrics_handler(State(state): State<AppState>) -> Response {
         cache.network.as_ref(),
         cache.disk.as_ref(),
         cache.processes.as_ref(),
+        #[cfg(feature = "mysql")]
+        cache.mysql.as_ref(),
+        #[cfg(not(feature = "mysql"))]
+        None,
+        #[cfg(feature = "postgresql")]
+        cache.postgresql.as_ref(),
+        #[cfg(not(feature = "postgresql"))]
+        None,
+        #[cfg(feature = "redis-db")]
+        cache.redis.as_ref(),
+        #[cfg(not(feature = "redis-db"))]
+        None,
     );
 
     (StatusCode::OK, output).into_response()
@@ -73,16 +104,33 @@ async fn health_handler(State(state): State<AppState>) -> Response {
         StatusCode::SERVICE_UNAVAILABLE
     };
 
+    let mut metrics_available = serde_json::json!({
+        "cpu": cache.cpu.is_some(),
+        "memory": cache.memory.is_some(),
+        "network": cache.network.is_some(),
+        "disk": cache.disk.is_some(),
+        "processes": cache.processes.is_some(),
+    });
+
+    #[cfg(feature = "mysql")]
+    {
+        metrics_available["mysql"] = serde_json::json!(cache.mysql.is_some());
+    }
+
+    #[cfg(feature = "postgresql")]
+    {
+        metrics_available["postgresql"] = serde_json::json!(cache.postgresql.is_some());
+    }
+
+    #[cfg(feature = "redis-db")]
+    {
+        metrics_available["redis"] = serde_json::json!(cache.redis.is_some());
+    }
+
     let body = json!({
         "status": if is_healthy { "healthy" } else { "unhealthy" },
         "last_update": cache.last_update.map(|t| t.elapsed().as_secs()),
-        "metrics_available": {
-            "cpu": cache.cpu.is_some(),
-            "memory": cache.memory.is_some(),
-            "network": cache.network.is_some(),
-            "disk": cache.disk.is_some(),
-            "processes": cache.processes.is_some(),
-        }
+        "metrics_available": metrics_available
     });
 
     (status, Json(body)).into_response()
@@ -103,7 +151,7 @@ async fn root_handler() -> Response {
 }
 
 /// Background task to collect metrics at regular intervals
-async fn metrics_collector_task(state: AppState, interval_secs: u64) {
+async fn metrics_collector_task(state: AppState, interval_secs: u64, config: Config) {
     let mut interval = interval(Duration::from_secs(interval_secs));
 
     let mut cpu_collector = CpuCollector::new();
@@ -111,6 +159,73 @@ async fn metrics_collector_task(state: AppState, interval_secs: u64) {
     let mut network_collector = NetworkCollector::new();
     let mut disk_collector = DiskCollector::new();
     let mut process_collector = ProcessCollector::new();
+
+    // Initialize database collectors based on config
+    #[cfg(feature = "mysql")]
+    let mut mysql_collector = if let Some(ref services) = config.services {
+        if let Some(ref mysql_config) = services.mysql {
+            if mysql_config.enabled {
+                info!("Initializing MySQL collector with {} instances", mysql_config.instances.len());
+                match MySQLCollector::new(mysql_config.instances.clone()) {
+                    Ok(collector) => Some(collector),
+                    Err(e) => {
+                        warn!("Failed to initialize MySQL collector: {}", e);
+                        None
+                    }
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    #[cfg(feature = "postgresql")]
+    let mut postgresql_collector = if let Some(ref services) = config.services {
+        if let Some(ref pg_config) = services.postgresql {
+            if pg_config.enabled {
+                info!("Initializing PostgreSQL collector with {} instances", pg_config.instances.len());
+                match PostgreSQLCollector::new(pg_config.instances.clone()) {
+                    Ok(collector) => Some(collector),
+                    Err(e) => {
+                        warn!("Failed to initialize PostgreSQL collector: {}", e);
+                        None
+                    }
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    #[cfg(feature = "redis-db")]
+    let mut redis_collector = if let Some(ref services) = config.services {
+        if let Some(ref redis_config) = services.redis {
+            if redis_config.enabled {
+                info!("Initializing Redis collector with {} instances", redis_config.instances.len());
+                match RedisCollector::new(redis_config.instances.clone()) {
+                    Ok(collector) => Some(collector),
+                    Err(e) => {
+                        warn!("Failed to initialize Redis collector: {}", e);
+                        None
+                    }
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    };
 
     loop {
         interval.tick().await;
@@ -123,12 +238,101 @@ async fn metrics_collector_task(state: AppState, interval_secs: u64) {
         let disk = disk_collector.collect().ok();
         let processes = process_collector.collect().ok();
 
+        // Collect database metrics
+        #[cfg(feature = "mysql")]
+        let mysql = if let Some(ref mut collector) = mysql_collector {
+            if let Some(ref services) = config.services {
+                if let Some(ref mysql_config) = services.mysql {
+                    match collector.collect_async(&mysql_config.instances).await {
+                        Ok(metrics) => {
+                            info!("Collected MySQL metrics: {} instances", metrics.instances.len());
+                            Some(metrics)
+                        }
+                        Err(e) => {
+                            warn!("Failed to collect MySQL metrics: {}", e);
+                            None
+                        }
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        #[cfg(feature = "postgresql")]
+        let postgresql = if let Some(ref mut collector) = postgresql_collector {
+            if let Some(ref services) = config.services {
+                if let Some(ref pg_config) = services.postgresql {
+                    match collector.collect_async(&pg_config.instances).await {
+                        Ok(metrics) => {
+                            info!("Collected PostgreSQL metrics: {} instances", metrics.instances.len());
+                            Some(metrics)
+                        }
+                        Err(e) => {
+                            warn!("Failed to collect PostgreSQL metrics: {}", e);
+                            None
+                        }
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        #[cfg(feature = "redis-db")]
+        let redis = if let Some(ref mut collector) = redis_collector {
+            if let Some(ref services) = config.services {
+                if let Some(ref redis_config) = services.redis {
+                    match collector.collect_async(&redis_config.instances).await {
+                        Ok(metrics) => {
+                            info!("Collected Redis metrics: {} instances", metrics.instances.len());
+                            Some(metrics)
+                        }
+                        Err(e) => {
+                            warn!("Failed to collect Redis metrics: {}", e);
+                            None
+                        }
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         let mut cache = state.metrics.write();
         cache.cpu = cpu;
         cache.memory = memory;
         cache.network = network;
         cache.disk = disk;
         cache.processes = processes;
+
+        #[cfg(feature = "mysql")]
+        {
+            cache.mysql = mysql;
+        }
+
+        #[cfg(feature = "postgresql")]
+        {
+            cache.postgresql = postgresql;
+        }
+
+        #[cfg(feature = "redis-db")]
+        {
+            cache.redis = redis;
+        }
+
         cache.last_update = Some(std::time::Instant::now());
 
         info!("Metrics collection complete");
@@ -147,8 +351,9 @@ pub async fn start_server(config: Config, listen_addr: SocketAddr) -> crate::Res
     // Start background metrics collection task
     let collector_state = state.clone();
     let update_interval = config.general.update_interval.as_secs();
+    let collector_config = config.clone();
     tokio::spawn(async move {
-        metrics_collector_task(collector_state, update_interval).await;
+        metrics_collector_task(collector_state, update_interval, collector_config).await;
     });
 
     // Build the router
