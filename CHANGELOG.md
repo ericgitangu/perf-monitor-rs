@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Docker Image** - Added curl to runtime dependencies for health check support
+  - Enables container health checks via HTTP endpoints
+  - Minimal image size impact (~2MB)
+
 ### Post-Week 1 Enhancements (Days 8+) - Production Infrastructure
 
 ## [0.2.0] - 2025-10-22

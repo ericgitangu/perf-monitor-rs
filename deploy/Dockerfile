@@ -28,9 +28,10 @@ RUN cargo build --release --features server,databases
 # Runtime stage - Debian slim for smaller final image
 FROM debian:bookworm-slim
 
-# Install runtime dependencies
+# Install runtime dependencies (including curl for health checks)
 RUN apt-get update && apt-get install -y \
     ca-certificates \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
